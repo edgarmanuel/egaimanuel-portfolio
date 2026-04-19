@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import matter from 'gray-matter'
 
-export const revalidate = 3600 // ISR 1hr
+export const revalidate = 86400 // ISR 24hr — refreshes at midnight via Vercel cron
 
 export async function GET() {
   const projectsDir = path.join(process.cwd(), 'projects')

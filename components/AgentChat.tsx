@@ -17,6 +17,28 @@ type Message = { role: "user" | "assistant"; content: string };
 
 const WEBHOOK = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL as string;
 const SITE_KEY = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY as string;
+const COOKIE_KEY = "egai_agent_session";
+
+const CHIPS = [
+  { label: "Me",       prompt: "Tell me about Egai's background and experience" },
+  { label: "Projects", prompt: "What automation projects has Egai built?" },
+  { label: "Skills",   prompt: "What tools and platforms does Egai specialize in?" },
+  { label: "Fun",      prompt: "Tell me something interesting about Egai" },
+  { label: "Contact",  prompt: "I'd like to book a discovery call with Egai" },
+];
+
+function getBookingCookie(): Record<string, string> | null {
+  try {
+    const raw = document.cookie.split("; ").find((c) => c.startsWith(COOKIE_KEY + "="));
+    if (!raw) return null;
+    return JSON.parse(decodeURIComponent(raw.split("=")[1]));
+  } catch { return null; }
+}
+
+function setBookingCookie(data: Record<string, string>) {
+  const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `${COOKIE_KEY}=${encodeURIComponent(JSON.stringify(data))}; expires=${expires}; path=/; SameSite=Lax`;
+}
 
 export default function AgentChat() {
   const [open, setOpen] = useState(false);
@@ -30,6 +52,7 @@ export default function AgentChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  const [showChips, setShowChips] = useState(true);
   const sessionId = useRef<string>("");
   const widgetId = useRef<string | null>(null);
   const tsContainer = useRef<HTMLDivElement>(null);
@@ -52,7 +75,6 @@ export default function AgentChat() {
     }
     widgetId.current = window.turnstile.render(tsContainer.current, {
       sitekey: SITE_KEY,
-      size: "invisible",
       callback: (t: string) => setToken(t),
       "expired-callback": () => setToken(null),
       "error-callback": () => setToken(null),
@@ -63,16 +85,18 @@ export default function AgentChat() {
     if (open && scriptReady.current) renderTurnstile();
   }, [open, renderTurnstile]);
 
-  const send = async () => {
-    if (!input.trim() || !token || loading) return;
-    const userMessage = input.trim();
+  const send = async (overrideMessage?: string) => {
+    const userMessage = (overrideMessage ?? input).trim();
+    if (!userMessage || !token || loading) return;
     setInput("");
+    setShowChips(false);
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setLoading(true);
     const usedToken = token;
     setToken(null);
 
     try {
+      const bookingCookie = getBookingCookie();
       const res = await fetch(WEBHOOK, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,15 +104,24 @@ export default function AgentChat() {
           message: userMessage,
           session_id: sessionId.current,
           turnstileToken: usedToken,
+          ...(bookingCookie ? { booking_cookie: bookingCookie } : {}),
         }),
       });
       const data = await res.json();
+      console.log("[AgentChat] n8n response:", JSON.stringify(data));
+      if (data.booking_uid && data.attendee_email) {
+        setBookingCookie({ booking_uid: data.booking_uid, attendee_email: data.attendee_email });
+      }
+      const reply =
+        data.reply ??
+        data.message ??
+        data.output ??
+        data.text ??
+        (typeof data === "string" ? data : null) ??
+        "Something went wrong. Please try again.";
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          content: data.reply ?? "Something went wrong. Please try again.",
-        },
+        { role: "assistant", content: reply },
       ]);
     } catch {
       setMessages((prev) => [
@@ -109,7 +142,7 @@ export default function AgentChat() {
     <>
       <Script
         src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-        strategy="lazyOnload"
+        strategy="afterInteractive"
         onLoad={() => {
           scriptReady.current = true;
           if (open) renderTurnstile();
@@ -181,8 +214,24 @@ export default function AgentChat() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Turnstile (invisible) */}
-          <div ref={tsContainer} />
+          {/* Turnstile — hidden visually, rendered for token */}
+          <div ref={tsContainer} style={{ position: "absolute", opacity: 0, pointerEvents: "none", height: 0, overflow: "hidden" }} />
+
+          {/* Quick chips */}
+          {showChips && (
+            <div className="px-3 pt-2 pb-1 flex flex-wrap gap-1.5">
+              {CHIPS.map((c) => (
+                <button
+                  key={c.label}
+                  onClick={() => send(c.prompt)}
+                  disabled={!token || loading}
+                  className="text-[11px] font-mono px-2.5 py-1 rounded-full border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-sky-400 hover:text-sky-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Input */}
           <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2 items-center">
@@ -196,7 +245,7 @@ export default function AgentChat() {
               className="flex-1 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-2 outline-none focus:border-sky-400 transition-colors placeholder:text-zinc-400 disabled:opacity-60"
             />
             <button
-              onClick={send}
+              onClick={() => send()}
               disabled={!token || loading || !input.trim()}
               className="w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95 shrink-0"
               style={{ background: "linear-gradient(135deg, #0284c7 0%, #6366f1 100%)" }}
