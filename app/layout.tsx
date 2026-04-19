@@ -3,7 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import AgentButton from "@/components/AgentButton";
+import AgentChat from "@/components/AgentChat";
 import BackgroundLayers from "@/components/BackgroundLayers";
 
 export const metadata: Metadata = {
@@ -56,7 +56,7 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
 
-        <AgentButton />
+        <AgentChat />
       </body>
     </html>
   );
