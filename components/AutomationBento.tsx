@@ -232,7 +232,14 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
   return (
     <motion.div
       layout
-      className={`${a.colSpan} ${a.rowSpan ?? ""} group relative bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-[2rem] p-7 flex flex-col gap-4 overflow-hidden shadow-[0_20px_40px_-15px_rgba(0,0,0,0.04)] dark:shadow-none`}
+      className={`${a.colSpan} ${a.rowSpan ?? ""} group relative rounded-[2rem] p-7 flex flex-col gap-4 overflow-hidden`}
+      style={{
+        background: "rgba(255,255,255,0.82)",
+        backdropFilter: "blur(24px) saturate(160%)",
+        WebkitBackdropFilter: "blur(24px) saturate(160%)",
+        border: "1px solid rgba(255,255,255,0.55)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px -8px rgba(0,0,0,0.07)",
+      }}
     >
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -313,7 +320,7 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
-            <p className="text-xs text-zinc-400 leading-relaxed border-t border-zinc-100 dark:border-zinc-800 pt-3">
+            <p className="text-xs text-zinc-500 leading-relaxed border-t border-white/40 pt-3">
               {a.how}
             </p>
           </motion.div>
@@ -327,7 +334,16 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
 
 function N8nEmbed() {
   return (
-    <div className="md:col-span-3 border border-dashed border-zinc-200 dark:border-zinc-700 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 min-h-[180px] bg-zinc-50/50 dark:bg-zinc-900/30">
+    <div
+      className="md:col-span-3 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 min-h-[180px]"
+      style={{
+        background: "rgba(255,255,255,0.82)",
+        backdropFilter: "blur(24px) saturate(160%)",
+        WebkitBackdropFilter: "blur(24px) saturate(160%)",
+        border: "1px dashed rgba(255,255,255,0.55)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px -8px rgba(0,0,0,0.07)",
+      }}
+    >
       <Lightning size={24} weight="thin" className="text-zinc-300 dark:text-zinc-600" />
       <p className="text-sm text-zinc-400 font-mono text-center">
         n8n self-hosted embed — <span className="text-accent">live workflow canvas</span> goes here
@@ -348,16 +364,27 @@ export default function AutomationBento() {
   return (
     <section id="automations" className="relative py-24 px-6 md:px-10">
       <div className="max-w-[1400px] mx-auto">
-      <div className="mb-14 flex flex-col md:flex-row md:items-end gap-4 justify-between">
+
+      {/* Section header — contained glass panel */}
+      <div
+        className="mb-10 rounded-3xl px-8 py-7 flex flex-col md:flex-row md:items-end gap-4 justify-between"
+        style={{
+          background: "rgba(255,255,255,0.82)",
+          backdropFilter: "blur(24px) saturate(160%)",
+          WebkitBackdropFilter: "blur(24px) saturate(160%)",
+          border: "1px solid rgba(255,255,255,0.55)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px -8px rgba(0,0,0,0.07)",
+        }}
+      >
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-4">Featured Automations</p>
-          <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter text-zinc-900 dark:text-zinc-100 max-w-[20ch] leading-tight">
+          <p className="text-[11px] font-mono uppercase tracking-widest text-sky-600 mb-4">Featured Automations</p>
+          <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter text-zinc-900 max-w-[20ch] leading-tight">
             Workflows I&apos;ve shipped to production.
           </h2>
         </div>
         <a
           href="#contact"
-          className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 group self-start md:self-auto"
+          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 transition-colors duration-200 group self-start md:self-auto shrink-0"
         >
           Hire me to build yours
           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />

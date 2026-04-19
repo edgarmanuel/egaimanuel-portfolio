@@ -31,9 +31,20 @@ export default function Footer() {
   };
 
   return (
-    <footer id="contact" className="relative border-t border-white/20">
+    <footer id="contact" className="relative">
+      {/* Liquid glass band */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "rgba(255,255,255,0.88)",
+          backdropFilter: "blur(28px) saturate(160%)",
+          WebkitBackdropFilter: "blur(28px) saturate(160%)",
+          borderTop: "1px solid rgba(255,255,255,0.6)",
+          boxShadow: "inset 0 1px 0 rgba(255,255,255,0.8)",
+        }}
+      />
       {/* CTA band */}
-      <div className="py-24 px-6 md:px-10 max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
+      <div className="relative py-24 px-6 md:px-10 max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
         {/* Left */}
         <div>
           <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-6">Get In Touch</p>
@@ -157,11 +168,11 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-zinc-100 dark:border-zinc-800 py-6 px-6 md:px-10 max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span className="text-xs text-zinc-400 font-mono">
+      <div className="relative border-t border-zinc-200/60 py-6 px-6 md:px-10 max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+        <span className="text-xs text-zinc-500 font-mono">
           egai<span className="text-accent">.</span>manuel · Manila, Philippines
         </span>
-        <span className="text-xs text-zinc-300 dark:text-zinc-600 font-mono">
+        <span className="text-xs text-zinc-400 font-mono">
           Built with n8n logic and Next.js precision.
         </span>
       </div>

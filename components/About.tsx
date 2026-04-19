@@ -1,14 +1,26 @@
+const glassPanel = {
+  background: "rgba(255,255,255,0.82)",
+  backdropFilter: "blur(24px) saturate(160%)",
+  WebkitBackdropFilter: "blur(24px) saturate(160%)",
+  border: "1px solid rgba(255,255,255,0.55)",
+  boxShadow:
+    "inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px -8px rgba(0,0,0,0.07)",
+};
+
 export default function About() {
   return (
     <section id="about" className="relative py-28 px-6 md:px-10">
-      <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-16 items-start">
-        {/* Left — primary content */}
-        <div>
-          <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-400 mb-6">My Edge</p>
-          <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter leading-tight text-zinc-900 dark:text-zinc-100 mb-8 max-w-[22ch]">
+      <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-10 items-start">
+
+        {/* Left — glass panel around text only */}
+        <div className="rounded-3xl p-8 md:p-10" style={glassPanel}>
+          <p className="text-[11px] font-mono uppercase tracking-widest text-sky-600 mb-6">
+            My Edge
+          </p>
+          <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter leading-tight text-zinc-900 mb-8 max-w-[22ch]">
             Where 16 years of ops meets modern automation.
           </h2>
-          <div className="space-y-4 text-base text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-[60ch]">
+          <div className="space-y-4 text-base text-zinc-600 leading-relaxed max-w-[58ch]">
             <p>
               Most automation consultants either come from coding or from
               business — I come from both. Sixteen years running high-stakes BPO
@@ -26,23 +38,25 @@ export default function About() {
           </div>
         </div>
 
-        {/* Right — compact stats */}
+        {/* Right — stat tiles, each with same glass */}
         <div className="md:pt-14 grid grid-cols-2 gap-4">
           {[
             { n: "16+", label: "Years in BPO Operations" },
             { n: "10+", label: "Production Workflows Built" },
-            { n: "4", label: "Automation Platforms" },
-            { n: "3+", label: "Years Crypto Support" },
+            { n: "4",   label: "Automation Platforms" },
+            { n: "3+",  label: "Years Crypto Support" },
           ].map((s) => (
             <div
               key={s.label}
-              className="border border-zinc-100 dark:border-zinc-800 rounded-2xl p-5 flex flex-col gap-1"
+              className="rounded-2xl p-5 flex flex-col gap-1"
+              style={glassPanel}
             >
-              <span className="text-3xl font-mono font-semibold text-zinc-900 dark:text-zinc-100">{s.n}</span>
-              <span className="text-xs text-zinc-400 leading-snug">{s.label}</span>
+              <span className="text-3xl font-mono font-semibold text-zinc-900">{s.n}</span>
+              <span className="text-xs text-zinc-500 leading-snug">{s.label}</span>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

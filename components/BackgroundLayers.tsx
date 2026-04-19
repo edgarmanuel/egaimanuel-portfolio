@@ -2,104 +2,151 @@
 
 import { useEffect, useRef } from "react";
 
+const TOTAL_FRAMES = 192;
+
+function frameSrc(i: number) {
+  return `/frames/frame${String(i).padStart(4, "0")}.webp`;
+}
+
 export default function BackgroundLayers() {
   const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const scrollVideoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const rafPendingRef = useRef(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const framesRef = useRef<HTMLImageElement[]>([]);
+  const currentFrameRef = useRef(0);
+  const targetFrameRef = useRef(0);
+  const rafRef = useRef<number>(0);
+  const prevPointerRef = useRef({ x: 0, y: 0 });
 
-  // Fade hero-04 out when hero section leaves the viewport
+  // Preload all frames
   useEffect(() => {
-    const heroSection = document.getElementById("hero");
-    const video = heroVideoRef.current;
-    if (!heroSection || !video) return;
-
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        video.style.transition = "opacity 0.6s ease";
-        video.style.opacity = entry.isIntersecting ? "1" : "0";
-      },
-      { threshold: 0.05 }
-    );
-    obs.observe(heroSection);
-    return () => obs.disconnect();
+    const imgs: HTMLImageElement[] = [];
+    for (let i = 1; i <= TOTAL_FRAMES; i++) {
+      const img = new Image();
+      img.src = frameSrc(i);
+      imgs.push(img);
+    }
+    framesRef.current = imgs;
+    imgs[0].onload = () => drawFrame(0);
   }, []);
 
-  // Scroll-scrub scroll-06 — one seek per rAF tick, zero seeks when idle
+  // Size canvas to viewport with DPR
   useEffect(() => {
-    const video = scrollVideoRef.current;
-    if (!video) return;
-
-    video.pause();
-
-    const onScroll = () => {
-      if (rafPendingRef.current) return;
-      rafPendingRef.current = true;
-
-      requestAnimationFrame(() => {
-        rafPendingRef.current = false;
-        if (!video.duration) return;
-
-        const heroSection = document.getElementById("hero");
-        const heroBottom = heroSection
-          ? heroSection.offsetTop + heroSection.offsetHeight
-          : window.innerHeight;
-        const scrollableAfterHero =
-          document.documentElement.scrollHeight - window.innerHeight - heroBottom;
-        const scrolledPastHero = Math.max(0, window.scrollY - heroBottom);
-        const progress =
-          scrollableAfterHero > 0
-            ? Math.min(scrolledPastHero / scrollableAfterHero, 1)
-            : 0;
-        const target = progress * video.duration;
-
-        if (Math.abs(target - video.currentTime) > 1 / 30) {
-          video.currentTime = target;
-        }
-      });
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const resize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = "100vw";
+      canvas.style.height = "100vh";
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.scale(dpr, dpr);
+      drawFrame(currentFrameRef.current);
     };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
 
+  // Scroll → frame index: starts after hero, spans rest of page
+  useEffect(() => {
+    const onScroll = () => {
+      const hero = document.getElementById("hero");
+      const heroBottom = hero ? hero.offsetTop + hero.offsetHeight : window.innerHeight;
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight - heroBottom;
+      const past = Math.max(0, window.scrollY - heroBottom);
+      const progress = scrollable > 0 ? Math.min(past / scrollable, 1) : 0;
+      targetFrameRef.current = Math.round(progress * (TOTAL_FRAMES - 1));
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Forward pointer movement to the fluid iframe's externalSplat API
+  // rAF loop: redraws only when target frame changes
   useEffect(() => {
-    const onPointerMove = (e: PointerEvent) => {
+    const tick = () => {
+      const t = targetFrameRef.current;
+      if (t !== currentFrameRef.current) {
+        const img = framesRef.current[t];
+        if (img?.complete) {
+          drawFrame(t);
+          currentFrameRef.current = t;
+        }
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  // Fade hero video out when hero section leaves viewport
+  useEffect(() => {
+    const hero = document.getElementById("hero");
+    const video = heroVideoRef.current;
+    if (!hero || !video) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        video.style.transition = "opacity 0.6s ease";
+        video.style.opacity = e.isIntersecting ? "1" : "0";
+      },
+      { threshold: 0.05 }
+    );
+    obs.observe(hero);
+    return () => obs.disconnect();
+  }, []);
+
+  // Forward pointer to fluid — manual delta for iOS Safari compatibility
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
       const iframe = iframeRef.current;
       if (!iframe?.contentWindow) return;
       const normX = e.clientX / window.innerWidth;
       const normY = e.clientY / window.innerHeight;
-      const dx = e.movementX / window.innerWidth;
-      const dy = e.movementY / window.innerHeight;
+      const dx = (e.clientX - prevPointerRef.current.x) / window.innerWidth;
+      const dy = (e.clientY - prevPointerRef.current.y) / window.innerHeight;
+      prevPointerRef.current = { x: e.clientX, y: e.clientY };
+      if (Math.abs(dx) < 0.0001 && Math.abs(dy) < 0.0001) return;
       try {
         (iframe.contentWindow as unknown as {
           externalSplat?: (x: number, y: number, dx: number, dy: number) => void;
         }).externalSplat?.(normX, normY, dx, dy);
-      } catch { /* cross-origin guard */ }
+      } catch { /* cross-origin */ }
     };
-
-    window.addEventListener("pointermove", onPointerMove);
-    return () => window.removeEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointermove", onMove, { passive: true });
+    return () => window.removeEventListener("pointermove", onMove);
   }, []);
+
+  const drawFrame = (index: number) => {
+    const canvas = canvasRef.current;
+    const img = framesRef.current[index];
+    if (!canvas || !img?.complete) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const dpr = window.devicePixelRatio || 1;
+    const cw = canvas.width / dpr;
+    const ch = canvas.height / dpr;
+    const iw = img.naturalWidth || 1440;
+    const ih = img.naturalHeight || 810;
+    const scale = Math.max(cw / iw, ch / ih);
+    const sw = iw * scale;
+    const sh = ih * scale;
+    ctx.drawImage(img, (cw - sw) / 2, (ch - sh) / 2, sw, sh);
+  };
 
   return (
     <>
-      {/* Layer 1 — scroll-06: persistent background, frame-scrubbed by scroll */}
-      <video
-        ref={scrollVideoRef}
-        src="/scroll-06.mp4"
-        muted
-        playsInline
-        preload="auto"
-        className="fixed inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ zIndex: 1 }}
+      {/* Layer 1 — WebP frame sequence: white bg, frames advance as user scrolls past hero */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 pointer-events-none"
+        style={{ zIndex: 1, background: "#ffffff" }}
       />
 
-      {/* Layer 2 — hero-04: covers scroll-06 while hero is in view */}
+      {/* Layer 2 — hero video: covers frame canvas while hero is visible */}
       <video
         ref={heroVideoRef}
-        src="/hero-04.mp4"
+        src="/hero.mp4"
         autoPlay
         muted
         loop
@@ -108,11 +155,7 @@ export default function BackgroundLayers() {
         style={{ zIndex: 2 }}
       />
 
-      {/*
-        Layer 3 — fluid simulation.
-        TRANSPARENT: true in fluid.html so the WebGL canvas only paints dye colors;
-        empty areas are alpha=0 and let the videos below show through.
-      */}
+      {/* Layer 3 — fluid simulation: transparent dyes paint over both layers */}
       <iframe
         ref={iframeRef}
         src="/fluid.html"
