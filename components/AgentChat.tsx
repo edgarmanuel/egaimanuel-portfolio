@@ -141,7 +141,10 @@ export default function AgentChat() {
       ]);
     } finally {
       setLoading(false);
-      if (widgetId.current) window.turnstile.reset(widgetId.current);
+      if (widgetId.current) {
+        window.turnstile.reset(widgetId.current);
+        window.turnstile.execute(widgetId.current);
+      }
     }
   };
 
