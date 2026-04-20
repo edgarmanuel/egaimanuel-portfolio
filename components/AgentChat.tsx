@@ -9,6 +9,7 @@ declare global {
     turnstile: {
       render: (el: HTMLElement, opts: object) => string;
       reset: (id: string) => void;
+      execute: (id: string) => void;
     };
   }
 }
@@ -71,6 +72,7 @@ export default function AgentChat() {
     if (!window.turnstile || !tsContainer.current) return;
     if (widgetId.current) {
       window.turnstile.reset(widgetId.current);
+      window.turnstile.execute(widgetId.current);
       return;
     }
     widgetId.current = window.turnstile.render(tsContainer.current, {
@@ -78,7 +80,10 @@ export default function AgentChat() {
       callback: (t: string) => setToken(t),
       "expired-callback": () => setToken(null),
       "error-callback": () => setToken(null),
+      execution: "execute",
+      appearance: "interaction-only",
     });
+    window.turnstile.execute(widgetId.current);
   }, []);
 
   useEffect(() => {
@@ -97,6 +102,7 @@ export default function AgentChat() {
 
     try {
       const bookingCookie = getBookingCookie();
+      const historySnapshot = messages.slice(-20); // send up to 20 prior messages for context
       const res = await fetch(WEBHOOK, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,6 +110,7 @@ export default function AgentChat() {
           message: userMessage,
           session_id: sessionId.current,
           turnstileToken: usedToken,
+          history: historySnapshot,
           ...(bookingCookie ? { booking_cookie: bookingCookie } : {}),
         }),
       });
@@ -214,8 +221,8 @@ export default function AgentChat() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Turnstile — hidden visually, rendered for token */}
-          <div ref={tsContainer} style={{ position: "absolute", opacity: 0, pointerEvents: "none", height: 0, overflow: "hidden" }} />
+          {/* Turnstile — invisible mode, renders nothing unless CF requires interaction */}
+          <div ref={tsContainer} style={{ position: "absolute", bottom: 0, right: 0 }} />
 
           {/* Quick chips */}
           {showChips && (
@@ -234,15 +241,28 @@ export default function AgentChat() {
           )}
 
           {/* Input */}
-          <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2 items-center">
-            <input
-              type="text"
+          <div className="p-3 border-t border-zinc-100 dark:border-zinc-800 flex gap-2 items-end">
+            <textarea
+              rows={1}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && send()}
+              onChange={(e) => {
+                setInput(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                  setInput((v) => v + "\n");
+                  return;
+                }
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send();
+                }
+              }}
               placeholder={token ? "Ask me anything…" : "Verifying…"}
               disabled={loading}
-              className="flex-1 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-2 outline-none focus:border-sky-400 transition-colors placeholder:text-zinc-400 disabled:opacity-60"
+              className="flex-1 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 px-3 py-2 outline-none focus:border-sky-400 transition-colors placeholder:text-zinc-400 disabled:opacity-60 resize-none overflow-hidden"
             />
             <button
               onClick={() => send()}
