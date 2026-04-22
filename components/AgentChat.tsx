@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Robot, X, PaperPlaneTilt } from "@phosphor-icons/react";
+import { Robot, X, PaperPlaneTilt, CalendarCheckIcon } from "@phosphor-icons/react";
 import Script from "next/script";
 
 declare global {
@@ -161,24 +161,43 @@ export default function AgentChat() {
 
       {/* Floating button */}
       <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-2">
-        {!open && (
-          <span className="absolute w-14 h-14 rounded-full bg-sky-400/30 animate-ping" />
-        )}
-        <button
-          aria-label="Talk to AI Agent"
-          onClick={() => setOpen((o) => !o)}
-          className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(2,132,199,0.35)] transition-all duration-200 hover:scale-110 active:scale-95"
-          style={{ background: "linear-gradient(135deg, #0284c7 0%, #6366f1 100%)" }}
+        {/* Book a Call button */}
+        <a
+          href="https://cal.com/egai-manuel"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Book a Call"
+          className="group relative w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(2,132,199,0.2)] transition-all duration-200 hover:scale-110 active:scale-95 bg-white border border-zinc-200"
         >
-          {open ? (
-            <X size={22} weight="bold" color="white" />
-          ) : (
-            <Robot size={24} weight="bold" color="white" />
-          )}
-        </button>
+          <CalendarCheckIcon size={22} className="text-sky-600" />
+          <span className="absolute right-16 whitespace-nowrap text-[11px] font-mono bg-zinc-900 text-white px-2.5 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+            Book a Call
+          </span>
+        </a>
         <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">
-          AI Agent
+          Book Call
         </span>
+
+        <div className="relative flex flex-col items-center gap-2">
+          {!open && (
+            <span className="absolute w-14 h-14 rounded-full bg-sky-400/30 animate-ping" />
+          )}
+          <button
+            aria-label="Talk to AI Agent"
+            onClick={() => setOpen((o) => !o)}
+            className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-[0_8px_32px_rgba(2,132,199,0.35)] transition-all duration-200 hover:scale-110 active:scale-95"
+            style={{ background: "linear-gradient(135deg, #0284c7 0%, #6366f1 100%)" }}
+          >
+            {open ? (
+              <X size={22} weight="bold" color="white" />
+            ) : (
+              <Robot size={24} weight="bold" color="white" />
+            )}
+          </button>
+          <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">
+            AI Agent
+          </span>
+        </div>
       </div>
 
       {/* Chat panel */}

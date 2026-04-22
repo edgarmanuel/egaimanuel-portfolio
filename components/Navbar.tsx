@@ -59,6 +59,14 @@ export default function Navbar() {
           {LINKS.map((l) => (
             <DockLink key={l.href} {...l} />
           ))}
+          <a
+            href="https://cal.com/egai-manuel"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 px-4 py-1.5 rounded-full transition-colors duration-200"
+          >
+            Book a Call
+          </a>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -107,6 +115,22 @@ export default function Navbar() {
                   </a>
                 </motion.div>
               ))}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 20, opacity: 0 }}
+                transition={{ delay: LINKS.length * 0.07, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <a
+                  href="https://cal.com/egai-manuel"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setOpen(false)}
+                  className="text-xl font-semibold text-white bg-sky-600 hover:bg-sky-700 px-8 py-3 rounded-full transition-colors duration-200"
+                >
+                  Book a Call
+                </a>
+              </motion.div>
             </nav>
           </motion.div>
         )}

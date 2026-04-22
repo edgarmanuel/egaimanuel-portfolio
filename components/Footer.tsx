@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, LinkedinLogo, Globe, EnvelopeSimple } from "@phosphor-icons/react";
+import { ArrowRight, LinkedinLogo, Globe, EnvelopeSimple, CalendarCheckIcon } from "@phosphor-icons/react";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -162,6 +162,15 @@ export default function Footer() {
                   </>
                 )}
               </button>
+              <a
+                href="https://cal.com/egai-manuel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-sky-500 hover:text-sky-600 px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-[1px] active:scale-[0.98]"
+              >
+                <CalendarCheckIcon size={15} className="group-hover:scale-110 transition-transform duration-200" />
+                Book a Discovery Call
+              </a>
             </form>
           )}
         </div>
