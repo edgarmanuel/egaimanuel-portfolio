@@ -52,9 +52,16 @@ Navbar links: About · Automations · Contact (no ThemeToggle)
 - No emojis anywhere in UI
 - Design taste: invoke `@egaimanuel.tech/taste-skill.md` only when building new UI
 
+## Email
+`egai@egaimanuel.tech` is hosted on Hostinger. Outbound email from n8n uses the `egai-agent-smtp` credential (id: `z68Fk07To51TSGMk`, type: `smtp`) — **not** Gmail OAuth2. Always use this credential for any workflow that sends email.
+
 ## AI Chat Agent
 Webhook: `https://n8n.srv1518028.hstgr.cloud/webhook/chat`
 Full details: `docs/agent-architecture.md`
+
+## Contact Form
+Workflow ID: `9TNJlnfTO95uAwEA` (active) — webhook on `/webhook/contact`, sends via SMTP to `egai@egaimanuel.tech`, reply-to set to sender's address.
+Next.js API route: `app/api/contact/route.ts` — validates fields server-side, proxies to n8n.
 
 ## Docs
 - `docs/agent-architecture.md` — n8n instance, payload schemas, env vars, cookie logic

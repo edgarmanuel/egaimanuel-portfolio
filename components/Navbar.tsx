@@ -47,15 +47,15 @@ export default function Navbar() {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 md:px-10 h-16 bg-white/90 backdrop-blur-md border-b border-zinc-200/60"
+        className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 md:px-10 h-16 bg-white/90 backdrop-blur-md border-b border-zinc-200/60 relative"
       >
         {/* Logo */}
         <a href="#" className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
           egai<span className="text-accent">.</span>
         </a>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Desktop nav — absolutely centered so it stays mid-screen regardless of logo/button widths */}
+        <nav className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
           {LINKS.map((l) => (
             <DockLink key={l.href} {...l} />
           ))}

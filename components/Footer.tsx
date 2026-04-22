@@ -26,8 +26,17 @@ export default function Footer() {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
     setStatus("loading");
-    await new Promise((r) => setTimeout(r, 1200));
-    setStatus("success");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, message }),
+      });
+      if (!res.ok) throw new Error();
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    }
   };
 
   return (
@@ -85,6 +94,9 @@ export default function Footer() {
 
         {/* Right — contact form */}
         <div>
+          {status === "error" && (
+            <p className="text-sm text-red-500 mb-4">Something went wrong — please try again or email me directly.</p>
+          )}
           {status === "success" ? (
             <div className="border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl p-8 flex flex-col gap-3">
               <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600">

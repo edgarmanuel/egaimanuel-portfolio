@@ -100,16 +100,16 @@ export default function BackgroundLayers() {
     return () => obs.disconnect();
   }, []);
 
-  // Forward pointer to fluid — manual delta for iOS Safari compatibility
+  // Forward pointer/touch to fluid sim
   useEffect(() => {
-    const onMove = (e: PointerEvent) => {
+    const forward = (clientX: number, clientY: number) => {
       const iframe = iframeRef.current;
       if (!iframe?.contentWindow) return;
-      const normX = e.clientX / window.innerWidth;
-      const normY = e.clientY / window.innerHeight;
-      const dx = (e.clientX - prevPointerRef.current.x) / window.innerWidth;
-      const dy = (e.clientY - prevPointerRef.current.y) / window.innerHeight;
-      prevPointerRef.current = { x: e.clientX, y: e.clientY };
+      const normX = clientX / window.innerWidth;
+      const normY = clientY / window.innerHeight;
+      const dx = (clientX - prevPointerRef.current.x) / window.innerWidth;
+      const dy = (clientY - prevPointerRef.current.y) / window.innerHeight;
+      prevPointerRef.current = { x: clientX, y: clientY };
       if (Math.abs(dx) < 0.0001 && Math.abs(dy) < 0.0001) return;
       try {
         (iframe.contentWindow as unknown as {
@@ -117,8 +117,26 @@ export default function BackgroundLayers() {
         }).externalSplat?.(normX, normY, dx, dy);
       } catch { /* cross-origin */ }
     };
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
+
+    // Mouse/stylus via Pointer Events — skip touch (handled separately below)
+    const onPointerMove = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
+      forward(e.clientX, e.clientY);
+    };
+
+    // Touch via TouchEvent — fires continuously even after browser enters scroll mode,
+    // which is when pointermove stops delivering on mobile
+    const onTouchMove = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (t) forward(t.clientX, t.clientY);
+    };
+
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("touchmove", onTouchMove);
+    };
   }, []);
 
   const drawFrame = (index: number) => {
