@@ -30,7 +30,7 @@ function DockLink({ label, href, onClose }: { label: string; href: string; onClo
       onMouseMove={handleMouseMove}
       onMouseLeave={() => x.set(0)}
       onClick={onClose}
-      className="relative text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 px-1 py-0.5 group"
+      className="relative text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-200 px-1 py-0.5 group"
     >
       {label}
       <span className="absolute -bottom-0.5 left-0 w-0 h-px bg-accent group-hover:w-full transition-all duration-300" />

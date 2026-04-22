@@ -69,7 +69,7 @@ const TypewriterDisplay = memo(function TypewriterDisplay() {
   }, [phase, displayed, idx]);
 
   return (
-    <div className="flex items-center gap-2 font-mono text-xs text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl px-3 py-2 min-h-[2.5rem]">
+    <div className="flex items-center gap-2 font-mono text-xs text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800/60 rounded-xl px-3 py-2 min-h-[2.5rem]">
       <span className="text-accent">›</span>
       <span>{displayed}</span>
       <span className="inline-block w-0.5 h-3.5 bg-accent animate-pulse" />
@@ -128,7 +128,7 @@ const InfiniteCarousel = memo(function InfiniteCarousel({ items }: { items: stri
         {doubled.map((item, i) => (
           <span
             key={i}
-            className="shrink-0 text-[10px] font-mono text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 rounded-full px-2.5 py-1 bg-white dark:bg-zinc-900"
+            className="shrink-0 text-[10px] font-mono text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-full px-2.5 py-1 bg-white dark:bg-zinc-900"
           >
             {item}
           </span>
@@ -233,7 +233,7 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
       layout
       className={`${a.colSpan} ${a.rowSpan ?? ""} group relative rounded-[2rem] p-7 flex flex-col gap-4 overflow-hidden`}
       style={{
-        background: "rgba(255,255,255,0.82)",
+        background: "rgba(255,255,255,0.15)",
         backdropFilter: "blur(24px) saturate(160%)",
         WebkitBackdropFilter: "blur(24px) saturate(160%)",
         border: "1px solid rgba(255,255,255,0.55)",
@@ -255,13 +255,13 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
 
       <div>
         <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight text-base">{a.title}</h3>
-        <p className="text-sm text-zinc-400 dark:text-zinc-500 leading-relaxed mt-1">{a.description}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mt-1">{a.description}</p>
       </div>
 
       {/* Metric */}
       <div className="flex items-end gap-1">
         <span className="text-3xl font-mono font-semibold text-zinc-900 dark:text-zinc-100">{a.metric}</span>
-        <span className="text-xs text-zinc-400 pb-1">{a.metricLabel}</span>
+        <span className="text-xs text-zinc-600 pb-1">{a.metricLabel}</span>
       </div>
 
       {/* Perpetual animation zone */}
@@ -276,7 +276,7 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
                 key={s}
                 layout
                 layoutId={`step-${a.id}-${s}`}
-                className="flex items-center gap-2 text-xs text-zinc-400"
+                className="flex items-center gap-2 text-xs text-zinc-600"
               >
                 <span className="w-4 h-4 rounded-full bg-accent/10 text-accent text-[9px] flex items-center justify-center font-mono">{i + 1}</span>
                 {s}
@@ -286,7 +286,7 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
           </motion.div>
         )}
         {a.animation === "highlight" && (
-          <div className="flex items-center gap-2 text-xs text-zinc-400 font-mono">
+          <div className="flex items-center gap-2 text-xs text-zinc-600 font-mono">
             <Robot size={13} className="text-accent" />
             <span>ACoS &gt; 38% → pausing 3 keywords</span>
           </div>
@@ -296,7 +296,7 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
       {/* Tech badges */}
       <div className="flex flex-wrap gap-1.5 mt-auto">
         {a.tags.map((t) => (
-          <span key={t} className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 rounded-full px-2.5 py-0.5">
+          <span key={t} className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-full px-2.5 py-0.5">
             {t}
           </span>
         ))}
@@ -305,7 +305,7 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
       {/* Expandable "How I Built It" */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 hover:text-accent transition-colors duration-200 w-fit"
+        className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-600 hover:text-accent transition-colors duration-200 w-fit"
       >
         {expanded ? <CaretUp size={11} /> : <CaretDown size={11} />}
         How I Built It
@@ -319,7 +319,7 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
-            <p className="text-xs text-zinc-500 leading-relaxed border-t border-white/40 pt-3">
+            <p className="text-xs text-zinc-700 leading-relaxed border-t border-white/40 pt-3">
               {a.how}
             </p>
           </motion.div>
@@ -340,7 +340,7 @@ export default function AutomationBento() {
       <div
         className="mb-10 rounded-3xl px-8 py-7 flex flex-col md:flex-row md:items-end gap-4 justify-between"
         style={{
-          background: "rgba(255,255,255,0.82)",
+          background: "rgba(255,255,255,0.15)",
           backdropFilter: "blur(24px) saturate(160%)",
           WebkitBackdropFilter: "blur(24px) saturate(160%)",
           border: "1px solid rgba(255,255,255,0.55)",
@@ -355,7 +355,7 @@ export default function AutomationBento() {
         </div>
         <a
           href="#contact"
-          className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-900 transition-colors duration-200 group self-start md:self-auto shrink-0"
+          className="inline-flex items-center gap-2 text-sm text-zinc-700 hover:text-zinc-900 transition-colors duration-200 group self-start md:self-auto shrink-0"
         >
           Hire me to build yours
           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-200" />
@@ -374,7 +374,7 @@ export default function AutomationBento() {
       <div className="mt-10 flex justify-center">
         <a
           href="#contact"
-          className="group inline-flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+          className="group inline-flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
         >
           <Play size={14} weight="fill" className="text-accent" />
           Book a free automation audit

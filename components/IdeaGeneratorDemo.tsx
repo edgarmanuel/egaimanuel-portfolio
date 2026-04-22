@@ -60,7 +60,7 @@ export default function IdeaGeneratorDemo() {
     <div
       className="md:col-span-3 rounded-[2rem] flex flex-col overflow-hidden min-h-[260px]"
       style={{
-        background: "rgba(255,255,255,0.82)",
+        background: "rgba(255,255,255,0.15)",
         backdropFilter: "blur(24px) saturate(160%)",
         WebkitBackdropFilter: "blur(24px) saturate(160%)",
         border: "1px solid rgba(255,255,255,0.55)",
@@ -91,7 +91,7 @@ export default function IdeaGeneratorDemo() {
               exit={{ opacity: 0 }}
               className="flex flex-col gap-3"
             >
-              <p className="text-xs text-zinc-500 leading-relaxed">
+              <p className="text-xs text-zinc-700 leading-relaxed">
                 Enter your job title or business type and get 3 tailored automation ideas — instantly.
               </p>
               <div className="flex gap-2 items-center">
@@ -118,7 +118,7 @@ export default function IdeaGeneratorDemo() {
                   <button
                     key={ex}
                     onClick={() => { setInput(ex); generate(ex); }}
-                    className="text-[10px] font-mono text-zinc-500 border border-zinc-200 rounded-full px-2.5 py-0.5 hover:border-sky-400 hover:text-sky-600 transition-colors bg-white/60"
+                    className="text-[10px] font-mono text-zinc-700 border border-zinc-200 rounded-full px-2.5 py-0.5 hover:border-sky-400 hover:text-sky-600 transition-colors bg-white/60"
                   >
                     {ex}
                   </button>
@@ -134,7 +134,7 @@ export default function IdeaGeneratorDemo() {
               className="flex-1 flex flex-col items-center justify-center gap-3 py-6"
             >
               <Spinner size={24} className="text-sky-500 animate-spin" />
-              <p className="text-xs text-zinc-400 font-mono">Generating ideas for &ldquo;{input}&rdquo;…</p>
+              <p className="text-xs text-zinc-600 font-mono">Generating ideas for &ldquo;{input}&rdquo;…</p>
             </motion.div>
           ) : error ? (
             <motion.div
@@ -144,7 +144,7 @@ export default function IdeaGeneratorDemo() {
               exit={{ opacity: 0 }}
               className="flex-1 flex flex-col items-center justify-center gap-3 py-6"
             >
-              <p className="text-xs text-zinc-400">{error}</p>
+              <p className="text-xs text-zinc-600">{error}</p>
               <button onClick={reset} className="text-[11px] font-mono text-sky-600 hover:underline">
                 Try again
               </button>
@@ -180,7 +180,7 @@ export default function IdeaGeneratorDemo() {
               ))}
               <button
                 onClick={reset}
-                className="self-start text-[11px] font-mono text-zinc-400 hover:text-sky-600 transition-colors mt-1"
+                className="self-start text-[11px] font-mono text-zinc-600 hover:text-sky-600 transition-colors mt-1"
               >
                 Try another
               </button>

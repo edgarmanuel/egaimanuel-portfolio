@@ -34,7 +34,7 @@ Navbar links: About · Automations · Contact (no ThemeToggle)
 ## Glass Panel Style (use this exact object everywhere)
 ```ts
 {
-  background: "rgba(255,255,255,0.82)",
+  background: "rgba(255,255,255,0.15)",
   backdropFilter: "blur(24px) saturate(160%)",
   WebkitBackdropFilter: "blur(24px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.55)",

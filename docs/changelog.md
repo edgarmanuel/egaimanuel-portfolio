@@ -4,6 +4,31 @@ Append a new entry at the top after each session. Format: `## YYYY-MM-DD — sum
 
 ---
 
+## 2026-04-23 — Glass panel opacity + text contrast refinement (locked at 0.15)
+
+- Reduced glass panel background opacity site-wide: `0.82` → `0.15` (Footer was `0.88` → `0.15`) across About, AutomationBento, IdeaGeneratorDemo, Footer — iterated through 0.40 → 0.35 → 0.30 → 0.25 → 0.15 before locking
+- Bumped muted text colors for ~70% effective contrast: `text-zinc-400` → `text-zinc-600`, `text-zinc-500` → `text-zinc-700` across all content components and Navbar nav links; heading and interactive hover states unchanged
+- Updated canonical glass panel value in both CLAUDE.md files
+
+## 2026-04-23 — Contact form wiring, fluid sim touch fix, Book a Call CTAs, nav centering
+
+- Added three "Book a Call" CTAs all pointing to `https://cal.com/egai-manuel`:
+  - `AgentChat.tsx`: `CalendarCheckIcon` circle button above Robot button, hover tooltip
+  - `Navbar.tsx`: sky-600 pill in desktop nav + animated entry in mobile overlay
+  - `Footer.tsx`: outlined secondary button below "Send Message"
+- Navbar links (About · Automations · Contact · Book a Call) now `absolute left-1/2 -translate-x-1/2` — centered regardless of logo/hamburger widths
+- Wired "Send Message" form to n8n SMTP webhook — created n8n workflow `9TNJlnfTO95uAwEA` (active, `/webhook/contact`) using `egai-agent-smtp` credential (Hostinger); created `app/api/contact/route.ts` as server-side proxy with validation; error state added to UI
+- Fixed fluid sim mobile touch: `BackgroundLayers.tsx` now listens to `touchmove` directly (skips `pointermove` for touch to avoid double-firing) — fixes stale-after-first-touch on iOS
+- Reduced fluid sim `SPLAT_RADIUS` from `0.18` → `0.03` for finer strokes
+- Updated `CLAUDE.md` with email hosting note (egai@egaimanuel.tech on Hostinger, always use `egai-agent-smtp`) and contact form workflow details
+- Pushed to `https://github.com/edgarmanuel/egaimanuel-portfolio` (commit `185c581`)
+
+## 2026-04-23 — Git setup + "Book a Call" CTA planning
+
+- Initialized git repo in `portfolio/`, added `public/frames/` to `.gitignore`, pushed to `https://github.com/edgarmanuel/egaimanuel-portfolio`
+- Planned next session: add persistent "Book a Call" fixed button (above AI Agent button), "Book a Call" in Navbar (desktop + mobile), and "Book a Discovery Call Now" button in Footer — all linking to `https://cal.com/egai-manuel` in a new tab
+- Confirmed "Send Message" form in `Footer.tsx` is currently a stub — no real submission, fakes success after 1.2s delay. Needs wiring before it does anything.
+
 ## 2026-04-22 — Frame canvas fade-in fix + AgentChatInline removal
 
 - Fixed WebP frame canvas appearing during hero section — canvas now starts at `opacity: 0` and fades in (`0.6s ease`) only when hero exits viewport, synced with hero video fade-out via shared `IntersectionObserver` on `#hero` (`BackgroundLayers.tsx`)

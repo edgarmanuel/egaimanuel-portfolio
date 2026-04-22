@@ -1,5 +1,5 @@
 const glassPanel = {
-  background: "rgba(255,255,255,0.82)",
+  background: "rgba(255,255,255,0.15)",
   backdropFilter: "blur(24px) saturate(160%)",
   WebkitBackdropFilter: "blur(24px) saturate(160%)",
   border: "1px solid rgba(255,255,255,0.55)",
@@ -52,7 +52,7 @@ export default function About() {
               style={glassPanel}
             >
               <span className="text-3xl font-mono font-semibold text-zinc-900">{s.n}</span>
-              <span className="text-xs text-zinc-500 leading-snug">{s.label}</span>
+              <span className="text-xs text-zinc-700 leading-snug">{s.label}</span>
             </div>
           ))}
         </div>
