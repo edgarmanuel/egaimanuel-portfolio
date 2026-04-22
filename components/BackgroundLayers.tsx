@@ -80,15 +80,19 @@ export default function BackgroundLayers() {
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
-  // Fade hero video out when hero section leaves viewport
+  // Fade hero video out (and canvas in) when hero section leaves viewport
   useEffect(() => {
     const hero = document.getElementById("hero");
+    const canvas = canvasRef.current;
     const video = heroVideoRef.current;
-    if (!hero || !video) return;
+    if (!hero || !video || !canvas) return;
     const obs = new IntersectionObserver(
       ([e]) => {
+        const entering = e.isIntersecting;
         video.style.transition = "opacity 0.6s ease";
-        video.style.opacity = e.isIntersecting ? "1" : "0";
+        video.style.opacity = entering ? "1" : "0";
+        canvas.style.transition = "opacity 0.6s ease";
+        canvas.style.opacity = entering ? "0" : "1";
       },
       { threshold: 0.05 }
     );
@@ -140,7 +144,7 @@ export default function BackgroundLayers() {
       <canvas
         ref={canvasRef}
         className="fixed inset-0 pointer-events-none"
-        style={{ zIndex: 1, background: "#ffffff" }}
+        style={{ zIndex: 1, background: "#ffffff", opacity: 0 }}
       />
 
       {/* Layer 2 — hero video: covers frame canvas while hero is visible */}

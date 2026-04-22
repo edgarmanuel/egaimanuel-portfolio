@@ -6,6 +6,7 @@ import {
   ArrowRight, Play, CaretDown, CaretUp, Lightning, Robot, YoutubeLogo,
   CalendarCheck, ShoppingBag, ChartBar, Envelope,
 } from "@phosphor-icons/react";
+import IdeaGeneratorDemo from "./IdeaGeneratorDemo";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,8 +21,6 @@ interface Automation {
   colSpan: string;
   rowSpan?: string;
   how: string;
-  loomUrl?: string;
-  n8nEmbed?: boolean;
   animation: "typewriter" | "list-sort" | "carousel" | "pulse" | "highlight";
 }
 
@@ -330,34 +329,6 @@ const AutomationTile = memo(function AutomationTile({ a }: { a: Automation }) {
   );
 });
 
-// ─── n8n embed placeholder ────────────────────────────────────────────────────
-
-function N8nEmbed() {
-  return (
-    <div
-      className="md:col-span-3 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 min-h-[180px]"
-      style={{
-        background: "rgba(255,255,255,0.82)",
-        backdropFilter: "blur(24px) saturate(160%)",
-        WebkitBackdropFilter: "blur(24px) saturate(160%)",
-        border: "1px dashed rgba(255,255,255,0.55)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px -8px rgba(0,0,0,0.07)",
-      }}
-    >
-      <Lightning size={24} weight="thin" className="text-zinc-300 dark:text-zinc-600" />
-      <p className="text-sm text-zinc-400 font-mono text-center">
-        n8n self-hosted embed — <span className="text-accent">live workflow canvas</span> goes here
-      </p>
-      <a
-        href="#contact"
-        className="text-xs text-zinc-400 border border-zinc-200 dark:border-zinc-700 rounded-full px-3 py-1 hover:border-accent hover:text-accent transition-colors duration-200"
-      >
-        Request a live demo
-      </a>
-    </div>
-  );
-}
-
 // ─── Section ──────────────────────────────────────────────────────────────────
 
 export default function AutomationBento() {
@@ -396,7 +367,7 @@ export default function AutomationBento() {
         {AUTOMATIONS.map((a) => (
           <AutomationTile key={a.id} a={a} />
         ))}
-        <N8nEmbed />
+        <IdeaGeneratorDemo />
       </div>
 
       {/* Bottom CTA */}
