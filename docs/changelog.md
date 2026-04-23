@@ -4,6 +4,18 @@ Append a new entry at the top after each session. Format: `## YYYY-MM-DD — sum
 
 ---
 
+## 2026-04-23 — Security audit (no code changes); dark mode trial reverted
+
+- Full security audit completed — no code changes made this session, findings documented for next session
+- Critical: Turnstile token never verified server-side in `/api/contact/route.ts` (secret env var exists, verification call absent)
+- Critical: No rate limiting on contact form, chat webhook, or idea generator — unlimited requests per IP
+- Critical: Idea generator calls n8n directly from the browser (`IdeaGeneratorDemo.tsx` line 13) with no server proxy, no token, no auth
+- High: No fetch timeout (`AbortController`) on n8n proxy calls in `app/api/contact/route.ts`
+- High: No CSRF origin check on `/api/contact`
+- Medium: No security headers (CSP, X-Frame-Options, HSTS) in `next.config.mjs`
+- Medium: Projects API (`app/api/projects/route.ts`) has no path traversal guard on filenames
+- Dark mode implementation was attempted (CSS vars, ThemeProvider unlock, Navbar toggle) then fully reverted at user request — background layers (WebP frames + video) were not visible in dark mode trial; all files restored to pre-dark-mode state, `forcedTheme="light"` reinstated
+
 ## 2026-04-23 — Glass panel opacity + text contrast refinement (locked at 0.15)
 
 - Reduced glass panel background opacity site-wide: `0.82` → `0.15` (Footer was `0.88` → `0.15`) across About, AutomationBento, IdeaGeneratorDemo, Footer — iterated through 0.40 → 0.35 → 0.30 → 0.25 → 0.15 before locking

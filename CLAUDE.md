@@ -42,7 +42,7 @@ Navbar links: About · Automations · Contact (no ThemeToggle)
 }
 ```
 - Apply to **immediate text containers only** — never full-width section bands
-- Footer exception: full-width glass band (`rgba(255,255,255,0.88)`, blur 28px)
+- Footer exception: full-width glass band (`rgba(255,255,255,0.15)`, blur 28px)
 
 ## Style Conventions
 - Sections: `transparent` backgrounds so layers show through

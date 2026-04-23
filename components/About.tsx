@@ -20,7 +20,7 @@ export default function About() {
           <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter leading-tight text-zinc-900 mb-8 max-w-[22ch]">
             Where 16 years of ops meets modern automation.
           </h2>
-          <div className="space-y-4 text-base text-zinc-600 leading-relaxed max-w-[58ch]">
+          <div className="space-y-4 text-base text-zinc-800 leading-relaxed max-w-[58ch]">
             <p>
               Most automation consultants either come from coding or from
               business — I come from both. Sixteen years running high-stakes BPO
@@ -52,7 +52,7 @@ export default function About() {
               style={glassPanel}
             >
               <span className="text-3xl font-mono font-semibold text-zinc-900">{s.n}</span>
-              <span className="text-xs text-zinc-700 leading-snug">{s.label}</span>
+              <span className="text-xs text-zinc-800 leading-snug">{s.label}</span>
             </div>
           ))}
         </div>

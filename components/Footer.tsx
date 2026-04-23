@@ -1,7 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
+import Script from "next/script";
 import { ArrowRight, LinkedinLogo, Globe, EnvelopeSimple, CalendarCheckIcon } from "@phosphor-icons/react";
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY as string;
+
+declare global {
+  interface Window {
+    turnstile: {
+      render: (el: HTMLElement, opts: object) => string;
+      reset: (id: string) => void;
+      execute: (id: string) => void;
+    };
+  }
+}
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -11,6 +24,21 @@ export default function Footer() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<FormState>("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [tsToken, setTsToken] = useState<string | null>(null);
+  const tsContainer = useRef<HTMLDivElement>(null);
+  const widgetId = useRef<string | null>(null);
+
+  const initTurnstile = useCallback(() => {
+    if (!window.turnstile || !tsContainer.current || widgetId.current) return;
+    widgetId.current = window.turnstile.render(tsContainer.current, {
+      sitekey: TURNSTILE_SITE_KEY,
+      callback: (t: string) => setTsToken(t),
+      "error-callback": () => setTsToken(null),
+      "expired-callback": () => setTsToken(null),
+      appearance: "interaction-only",
+      execution: "render",
+    });
+  }, []);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -30,16 +58,27 @@ export default function Footer() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({ name, email, message, turnstileToken: tsToken }),
       });
       if (!res.ok) throw new Error();
       setStatus("success");
     } catch {
       setStatus("error");
+    } finally {
+      if (widgetId.current) {
+        window.turnstile.reset(widgetId.current);
+        setTsToken(null);
+      }
     }
   };
 
   return (
+    <>
+    <Script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      strategy="afterInteractive"
+      onLoad={initTurnstile}
+    />
     <footer id="contact" className="relative">
       {/* Liquid glass band */}
       <div
@@ -56,11 +95,11 @@ export default function Footer() {
       <div className="relative py-24 px-6 md:px-10 max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
         {/* Left */}
         <div>
-          <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-600 mb-6">Get In Touch</p>
+          <p className="text-[11px] font-mono uppercase tracking-widest text-zinc-800 mb-6">Get In Touch</p>
           <h2 className="text-4xl md:text-5xl font-semibold tracking-tighter text-zinc-900 dark:text-zinc-100 leading-tight mb-6 max-w-[18ch]">
             Ready to automate what&apos;s slowing you down?
           </h2>
-          <p className="text-base text-zinc-700 dark:text-zinc-300 leading-relaxed max-w-[48ch] mb-8">
+          <p className="text-base text-zinc-800 dark:text-zinc-300 leading-relaxed max-w-[48ch] mb-8">
             Tell me what you want to automate — I&apos;ll scope it and propose a solution
             in 24 hours. Free consultation, no pitch decks.
           </p>
@@ -68,7 +107,7 @@ export default function Footer() {
           <div className="flex flex-col gap-3">
             <a
               href="mailto:egai@egaimanuel.tech"
-              className="inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-zinc-800 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               <EnvelopeSimple size={16} />
               egai@egaimanuel.tech
@@ -77,14 +116,14 @@ export default function Footer() {
               href="https://linkedin.com/in/egaimanuel"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-zinc-800 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               <LinkedinLogo size={16} />
               linkedin.com/in/egaimanuel
             </a>
             <a
               href="https://egaimanuel.tech"
-              className="inline-flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-zinc-800 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
             >
               <Globe size={16} />
               egaimanuel.tech
@@ -103,7 +142,7 @@ export default function Footer() {
                 <ArrowRight size={16} />
               </div>
               <p className="font-semibold text-zinc-900 dark:text-zinc-100">Message received.</p>
-              <p className="text-sm text-zinc-700 dark:text-zinc-300">
+              <p className="text-sm text-zinc-800 dark:text-zinc-300">
                 I&apos;ll reply within 24 hours. Looking forward to it.
               </p>
             </div>
@@ -111,7 +150,7 @@ export default function Footer() {
             <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
               {/* Name */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="name" className="text-xs font-mono text-zinc-700 dark:text-zinc-300">
+                <label htmlFor="name" className="text-xs font-mono text-zinc-800 dark:text-zinc-300">
                   Name
                 </label>
                 <input
@@ -127,7 +166,7 @@ export default function Footer() {
 
               {/* Email */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="email" className="text-xs font-mono text-zinc-700 dark:text-zinc-300">
+                <label htmlFor="email" className="text-xs font-mono text-zinc-800 dark:text-zinc-300">
                   Email
                 </label>
                 <input
@@ -143,7 +182,7 @@ export default function Footer() {
 
               {/* Message */}
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="message" className="text-xs font-mono text-zinc-700 dark:text-zinc-300">
+                <label htmlFor="message" className="text-xs font-mono text-zinc-800 dark:text-zinc-300">
                   What do you want to automate?
                 </label>
                 <textarea
@@ -178,7 +217,7 @@ export default function Footer() {
                 href="https://cal.com/egai-manuel"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:border-sky-500 hover:text-sky-600 px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-[1px] active:scale-[0.98]"
+                className="group inline-flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-300 hover:border-sky-500 hover:text-sky-600 px-6 py-3 rounded-full text-sm font-medium transition-all duration-200 hover:-translate-y-[1px] active:scale-[0.98]"
               >
                 <CalendarCheckIcon size={15} className="group-hover:scale-110 transition-transform duration-200" />
                 Book a Discovery Call
@@ -190,13 +229,16 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="relative border-t border-zinc-200/60 py-6 px-6 md:px-10 max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span className="text-xs text-zinc-700 font-mono">
+        <span className="text-xs text-zinc-800 font-mono">
           egai<span className="text-accent">.</span>manuel · Manila, Philippines
         </span>
-        <span className="text-xs text-zinc-600 font-mono">
+        <span className="text-xs text-zinc-800 font-mono">
           Built with n8n logic and Next.js precision.
         </span>
       </div>
+      {/* Hidden Turnstile container */}
+      <div ref={tsContainer} className="hidden" />
     </footer>
+    </>
   );
 }
