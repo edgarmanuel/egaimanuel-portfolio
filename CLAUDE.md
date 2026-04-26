@@ -1,5 +1,24 @@
 # Portfolio — CLAUDE.md
 
+## ⚠️ Doc Maintenance — Update Without Being Asked
+
+**Update docs in the same response that makes the code change — not after, not at end of session.**
+
+After every file edit or n8n workflow change, immediately apply the relevant doc updates before responding to the user.
+
+| Change type | Exact files/sections to update |
+|---|---|
+| Frontend component changed | `docs/changelog.md` (new entry) · `CLAUDE.md` if layer/style/structure changes |
+| Widget payload field added/removed | `docs/agent-architecture.md` → payload schema · `CLAUDE.md` → AI Chat Agent section if webhook URL/IDs change |
+| New n8n workflow or endpoint added | `docs/agent-architecture.md` → Endpoints · `CLAUDE.md` → relevant section |
+| Deferred item resolved or added | `docs/deferred-items.md` → mark resolved or add entry, update "Last scanned" date |
+| Security header / env var changed | `docs/agent-architecture.md` → Environment Variables |
+| Any code change | `docs/changelog.md` always |
+
+**Quick stale-check before responding:** re-read `docs/agent-architecture.md` payload schemas and `docs/deferred-items.md` for accuracy.
+
+---
+
 ## Stack & Commands
 Next.js 14 · React 18 · Tailwind v3 · TypeScript · Phosphor Icons · Framer Motion
 

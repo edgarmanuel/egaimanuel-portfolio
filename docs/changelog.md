@@ -4,6 +4,33 @@ Append a new entry at the top after each session. Format: `## YYYY-MM-DD — sum
 
 ---
 
+## 2026-04-26 — AgentChat cancel/reschedule polling + fetch timeout
+
+- Expanded `BOOKING_PROCESSING_RE` to cover cancel and reschedule reply language (cancel/cancelling/cancelled/cancellation + reschedule/rescheduling/rescheduled near booking|call|meeting|appointment). Previous regex only matched booking/confirm/process/schedule — Grok's cancel replies use "cancel" which didn't trigger polling, so no cancel confirmation bubble appeared.
+- Added 45s `AbortController` timeout to main `fetch(WEBHOOK)` call in `send()`. If n8n hangs, the fetch now aborts after 45s and `loading` is cleared, restoring the input. Previously a hung request kept `loading: true` indefinitely, locking the textarea.
+
+## 2026-04-26 — AgentChat polling URL fix
+
+`AgentChat.tsx`: `BOOKING_STATUS_URL` derivation rewritten from `WEBHOOK.replace(/\/chat$/, "/booking-status")` to `${new URL(WEBHOOK).origin}/webhook/booking-status`. Old regex only matched chat webhooks ending in `/chat`; production env uses a UUID path (`/webhook/63279945-...`) so the regex no-op'd and the widget polled the chat endpoint with GET instead of the booking-status endpoint. Result: pulse appeared but no confirmation bubble or cookie ever set, even though backend stored the reply correctly. New URL-constructor approach works for any chat webhook path.
+
+## 2026-04-26 — Booking workflow v2.1.8 fixes + full test pass
+
+- Expanded `BOOKING_PROCESSING_RE` in `AgentChat.tsx` to cover `submit/submitted`, `confirm/confirmed`, `schedule/scheduled` — Grok reply wording varies; narrow regex caused polling to never fire and `booking_cookie` to never be set (v2.1.7 fix, documented this session)
+- Booking workflow `S3OWP8tBaqCxjR7g` is now **active** (all 3 paths tested and passing)
+- All three booking paths verified via n8n test harness: book (exec 1022), reschedule (exec 1025), cancel (exec 1028)
+- v2.1.8 fixes applied to booking workflow: reschedule reply field name, cancel Sheets Name/Email with optional-chain fallback, reschedule Notes hardcoded, available slots null guard
+
+---
+
+## 2026-04-25 — AgentChat.tsx: clientTimezone + booking status polling
+
+- Added `clientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone` to the webhook payload in `AgentChat.tsx` — sent on every message so n8n can resolve relative times to correct UTC without asking the user for their timezone
+- Booking status polling already live (shipped earlier): after detecting "processing/booking" in Grok reply, widget polls `GET /webhook/booking-status?session_id=X` every 2s up to 30s, appends result as new assistant bubble
+- Updated `docs/agent-architecture.md` — payload schema, booking status endpoint, polling behavior
+- Updated `docs/deferred-items.md` — removed resolved items, reorganized
+
+---
+
 ## 2026-04-23 — Security audit (no code changes); dark mode trial reverted
 
 - Full security audit completed — no code changes made this session, findings documented for next session

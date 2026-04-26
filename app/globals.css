@@ -10,6 +10,8 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* Custom scrollbar */

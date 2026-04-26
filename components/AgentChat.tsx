@@ -17,8 +17,14 @@ declare global {
 type Message = { role: "user" | "assistant"; content: string };
 
 const WEBHOOK = process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL as string;
+const BOOKING_STATUS_URL = `${new URL(WEBHOOK).origin}/webhook/booking-status`;
 const SITE_KEY = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY as string;
 const COOKIE_KEY = "egai_agent_session";
+
+// Detects Grok's reply indicating a booking action is being processed (book, cancel, reschedule).
+// Action words: process/submit/confirm/schedule/cancel/reschedule
+// Context words: booking/call/discovery/meeting/appointment/request/cancellation/rescheduling
+const BOOKING_PROCESSING_RE = /\b(process(?:ing)?|submit(?:t(?:ed|ing))?|confirm(?:ing|ed)?|schedul(?:ed|ing)?|cancel(?:l(?:ing|ed|ation))?|reschedul(?:ing|ed)?)\b.{0,120}\b(booking|call|discovery|meeting|appointment|request|cancellation|rescheduling)\b|\b(booking|call|discovery|meeting|appointment|request|cancellation|rescheduling)\b.{0,120}\b(process(?:ing)?|submit(?:t(?:ed|ing))?|confirm(?:ing|ed)?|schedul(?:ed|ing)?|cancel(?:l(?:ing|ed|ation))?|reschedul(?:ing|ed)?)\b/i;
 
 const CHIPS = [
   { label: "Me",       prompt: "Tell me about Egai's background and experience" },
@@ -52,6 +58,7 @@ export default function AgentChat() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [polling, setPolling] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [showChips, setShowChips] = useState(true);
   const sessionId = useRef<string>("");
@@ -59,6 +66,7 @@ export default function AgentChat() {
   const tsContainer = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scriptReady = useRef(false);
+  const pollingAbort = useRef<AbortController | null>(null);
 
   useEffect(() => {
     sessionId.current = crypto.randomUUID();
@@ -90,6 +98,41 @@ export default function AgentChat() {
     if (open && scriptReady.current) renderTurnstile();
   }, [open, renderTurnstile]);
 
+  useEffect(() => {
+    return () => { pollingAbort.current?.abort(); };
+  }, []);
+
+  const pollBookingResult = useCallback(async (sid: string) => {
+    pollingAbort.current?.abort();
+    const ctrl = new AbortController();
+    pollingAbort.current = ctrl;
+    setPolling(true);
+    try {
+      for (let attempt = 0; attempt < 15; attempt++) {
+        await new Promise<void>((res, rej) => {
+          const t = setTimeout(res, 2000);
+          ctrl.signal.addEventListener("abort", () => { clearTimeout(t); rej(new DOMException("aborted")); });
+        });
+        if (ctrl.signal.aborted) break;
+        const res = await fetch(`${BOOKING_STATUS_URL}?session_id=${encodeURIComponent(sid)}`, { signal: ctrl.signal });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.reply) {
+            if (data.booking_uid && data.attendee_email) {
+              setBookingCookie({ booking_uid: data.booking_uid, attendee_email: data.attendee_email });
+            }
+            setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+            break;
+          }
+        }
+      }
+    } catch {
+      // aborted or network error — silent
+    } finally {
+      setPolling(false);
+    }
+  }, []);
+
   const send = async (overrideMessage?: string) => {
     const userMessage = (overrideMessage ?? input).trim();
     if (!userMessage || !token || loading) return;
@@ -100,22 +143,25 @@ export default function AgentChat() {
     const usedToken = token;
     setToken(null);
 
+    const sendAbort = new AbortController();
+    const sendTimeout = setTimeout(() => sendAbort.abort(), 45000);
     try {
       const bookingCookie = getBookingCookie();
       const historySnapshot = messages.slice(-20); // send up to 20 prior messages for context
       const res = await fetch(WEBHOOK, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: sendAbort.signal,
         body: JSON.stringify({
           message: userMessage,
           session_id: sessionId.current,
           turnstileToken: usedToken,
           history: historySnapshot,
+          clientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           ...(bookingCookie ? { booking_cookie: bookingCookie } : {}),
         }),
       });
       const data = await res.json();
-      console.log("[AgentChat] n8n response:", JSON.stringify(data));
       if (data.booking_uid && data.attendee_email) {
         setBookingCookie({ booking_uid: data.booking_uid, attendee_email: data.attendee_email });
       }
@@ -130,6 +176,9 @@ export default function AgentChat() {
         ...prev,
         { role: "assistant", content: reply },
       ]);
+      if (BOOKING_PROCESSING_RE.test(reply)) {
+        pollBookingResult(sessionId.current);
+      }
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -140,6 +189,7 @@ export default function AgentChat() {
         },
       ]);
     } finally {
+      clearTimeout(sendTimeout);
       setLoading(false);
       if (widgetId.current) {
         window.turnstile.reset(widgetId.current);
@@ -216,7 +266,7 @@ export default function AgentChat() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 select-text">
             {messages.map((m, i) => (
               <div
                 key={i}
@@ -237,6 +287,13 @@ export default function AgentChat() {
               <div className="flex justify-start">
                 <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-bl-sm px-4 py-2 text-sm text-zinc-400 animate-pulse">
                   Thinking…
+                </div>
+              </div>
+            )}
+            {polling && !loading && (
+              <div className="flex justify-start">
+                <div className="bg-zinc-100 dark:bg-zinc-800 rounded-2xl rounded-bl-sm px-4 py-2 text-sm text-zinc-400 animate-pulse">
+                  Confirming booking…
                 </div>
               </div>
             )}

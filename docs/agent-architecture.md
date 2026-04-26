@@ -1,12 +1,13 @@
 # AI Chat Agent — Architecture
 
 ## Overview
-The chat widget (`components/AgentChat.tsx`) connects to an n8n instance on Hostinger. All workflow logic lives in n8n, not in this repo. The `egai-agent/` directory (repo root) contains workflow documentation only.
+The chat widget (`components/AgentChat.tsx`) connects to an n8n instance on Hostinger. All workflow logic lives in n8n, not in this repo.
 
 ## Endpoints
 - **n8n instance:** `https://n8n.srv1518028.hstgr.cloud` (regular mode — do NOT switch to queue mode)
-- **Webhook:** `https://n8n.srv1518028.hstgr.cloud/webhook/chat`
-- **Workflow IDs:** Chat: `YVztGwi5dUSqfkwx` · Booking sub-workflow: `W1bs2EMOwRutN15s`
+- **Chat webhook:** `https://n8n.srv1518028.hstgr.cloud/webhook/chat`
+- **Booking status:** `GET https://n8n.srv1518028.hstgr.cloud/webhook/booking-status?session_id=X`
+- **Production workflow IDs:** Chat `YVztGwi5dUSqfkwx` · Booking `W1bs2EMOwRutN15s`
 
 ## Widget → n8n Payload
 ```ts
@@ -15,6 +16,7 @@ The chat widget (`components/AgentChat.tsx`) connects to an n8n instance on Host
   session_id: string           // crypto.randomUUID(), persists in useRef
   turnstileToken: string       // Cloudflare Turnstile (invisible mode)
   history: { role: "user" | "assistant"; content: string }[]  // last 20
+  clientTimezone: string       // Intl.DateTimeFormat().resolvedOptions().timeZone (e.g. "America/New_York")
   booking_cookie?: { booking_uid: string; attendee_email: string }
 }
 ```
@@ -31,9 +33,12 @@ The chat widget (`components/AgentChat.tsx`) connects to an n8n instance on Host
 
 Widget sets `egai_agent_session` cookie (30-day, SameSite=Lax) when both `booking_uid` + `attendee_email` are present.
 
-**n8n is stateless** — conversation history is sent by the client on every request. The server never stores messages between calls.
+## Booking Status Polling
+After receiving a reply matching the "processing/booking" pattern, `AgentChat.tsx` polls `GET /webhook/booking-status?session_id=X` every 2s for up to 30s (15 attempts). On success, appends the result as a new assistant bubble. Uses `AbortController` for cleanup on unmount.
 
-See `egai-agent/CLAUDE.md` for full workflow architecture, credentials, and key decisions (especially the Lakera Guard false-positive fix).
+**n8n is stateless** — conversation history is sent by the client on every request.
+
+For full workflow architecture, credentials, and routing decisions see `egai-agent-optimized/CLAUDE.md`.
 
 ## Environment Variables (`portfolio/.env.local`)
 | Variable | Purpose |
